@@ -17,8 +17,8 @@ class World {
     return _lights;
   }
 
-  World addRectangle(float x, float y, float width, float height) {
-    _objects.add(new Rectangle(x, y, width, height));
+  World addRectangle(float x, float y, float width, float height, float rotation) {
+    _objects.add(new Rectangle(x, y, width, height, rotation));
     return this;
   }
 

@@ -19,17 +19,30 @@ void reset() {
     .addLight(new PVector(random(width), random(height)))
     .addLight(new PVector(random(width), random(height)))
     .addLight(new PVector(random(width), random(height)))
-    .addRectangle(random(width), random(height), random(300), random(300))
-    .addRectangle(random(width), random(height), random(300), random(300))
-    .addRectangle(random(width), random(height), random(300), random(300));
+    .addRectangle(random(width), random(height), random(300), random(300), random(2 * PI))
+    .addRectangle(random(width), random(height), random(300), random(300), random(2 * PI))
+    .addRectangle(random(width), random(height), random(300), random(300), random(2 * PI))
+    .addRectangle(random(width), random(height), random(300), random(300), random(2 * PI))
+    .addRectangle(random(width), random(height), random(300), random(300), random(2 * PI));
 
   background(0);
 }
 
 void redraw() {
+  drawGrid(g);
   drawLights(g);
   drawRectangles(g);
   drawRays(g);
+}
+
+void drawGrid(PGraphics g) {
+  g.stroke(96, 64, 110);
+  for (int x = 0; x < width; x += 100) {
+    g.line(x, 0, x, height);
+  }
+  for (int y = 0; y < height; y += 100) {
+    g.line(0, y, width, y);
+  }
 }
 
 void drawLights(PGraphics g) {
@@ -46,7 +59,7 @@ void drawLights(PGraphics g) {
 }
 
 void drawRectangles(PGraphics g) {
-  g.rectMode(CORNER);
+  g.rectMode(CENTER);
   g.noStroke();
   g.fill(128);
 
@@ -54,20 +67,25 @@ void drawRectangles(PGraphics g) {
   for (Object object : objects) {
     if (object.shape() == Shape.RECTANGLE) {
       Rectangle rectangle = (Rectangle)object;
-      g.rect(rectangle.x(), rectangle.y(), rectangle.width(), rectangle.height());
+      g.pushMatrix();
+      g.translate(rectangle.x(), rectangle.y());
+      g.rotate(rectangle.rotation());
+      g.rect(0, 0, rectangle.width(), rectangle.height());
+      g.popMatrix();
     }
   }
 }
 
 void drawRays(PGraphics g) {
+  int numRays = 4 * 360;
   ArrayList<Light> lights = world.lights();
   for (Light light : lights) {
     PVector position = light.position();
 
-    for (int i = 0; i < 4 * 360; i++) {
+    for (int i = 0; i < numRays; i++) {
       PVector direction = new PVector(
-          cos((float)i / 360 * 2 * PI),
-          sin((float)i / 360 * 2 * PI));
+          cos((float)i / numRays * 2 * PI),
+          sin((float)i / numRays * 2 * PI));
       drawRay(g, position, direction);
     }
   }
@@ -113,10 +131,6 @@ void drawRay(PGraphics g, PVector position, PVector direction) {
   } else {
     g.line(position.x, position.y, nearestIntersection.x, nearestIntersection.y);
   }
-}
-
-void mouseMoved() {
-  redraw();
 }
 
 void keyReleased() {

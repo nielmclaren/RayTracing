@@ -4,21 +4,36 @@ class Rectangle extends Object {
   private float _y;
   private float _width;
   private float _height;
-  private PVector _topLeft;
-  private PVector _topRight;
-  private PVector _bottomRight;
-  private PVector _bottomLeft;
+  private float _rotation;
+  public PVector _topLeft;
+  public PVector _topRight;
+  public PVector _bottomRight;
+  public PVector _bottomLeft;
 
-  Rectangle(float x, float y, float width, float height) {
-    _x = x;
-    _y = y;
+  Rectangle(float centerX, float centerY, float width, float height) {
+    init(centerX, centerY, width, height, 0);
+  }
+
+  Rectangle(float centerX, float centerY, float width, float height, float rotation) {
+    init(centerX, centerY, width, height, rotation);
+  }
+
+  private void init(float centerX, float centerY, float width, float height, float rotation) {
+    _x = centerX;
+    _y = centerY;
     _width = width;
     _height = height;
+    _rotation = rotation;
 
-    _topLeft = new PVector(_x, _y);
-    _topRight = new PVector(_x + _width, _y);
-    _bottomRight = new PVector(_x + _width, _y + _height);
-    _bottomLeft = new PVector(_x, _y + _height);
+    float w = _width/2;
+    float h = _height/2;
+    float cosine = cos(_rotation);
+    float sine = sin(_rotation);
+
+    _topLeft = new PVector(_x - w * cosine + h * sine, _y - w * sine - h * cosine);
+    _topRight = new PVector(_x + w * cosine + h * sine, _y + w * sine - h * cosine);
+    _bottomRight = new PVector(_x + w * cosine - h * sine, _y + w * sine + h * cosine);
+    _bottomLeft = new PVector(_x - w * cosine - h * sine, _y - w * sine + h * cosine);
   }
 
   float x() {
@@ -35,6 +50,10 @@ class Rectangle extends Object {
 
   float height() {
     return _height;
+  }
+
+  float rotation() {
+    return _rotation;
   }
 
   PVector getRayIntersection(PVector source, PVector direction) {
@@ -77,40 +96,31 @@ class Rectangle extends Object {
   }
 
   private PVector getLineIntersection(PVector p0, PVector d0, PVector p1, PVector d1) {
+    float slope0 = d0.y / d0.x;
+    float slope1 = d1.y / d1.x;
+    float yIntercept0 = p0.y - p0.x * slope0;
+    float yIntercept1 = p1.y - p1.x * slope1;
+
     if (d1.x == 0) {
       if (d0.x == 0) {
         return null;
       }
-
-      float slope0 = d0.y / d0.x;
-      float yIntercept0 = p0.y - p0.x * slope0;
       return new PVector(p1.x, p1.x * slope0 + yIntercept0);
     } else if (d1.y == 0) {
       if (d0.y == 0) {
         return null;
       }
-
-      float slope0 = d0.y / d0.x;
-      float yIntercept0 = p0.y - p0.x * slope0;
       return new PVector((p1.y - yIntercept0) / slope0, p1.y);
+    } else if (d0.x == 0) {
+      return new PVector(p0.x, p0.x * slope1 + yIntercept1);
+    } else  if (d0.y == 0) {
+      return new PVector((p0.y - yIntercept1) / slope1, p0.y);
     }
-    else {
-/*
-      float raySlope = rayDirection.y / rayDirection.x;
-      float lineSlope = lineDirection.y / lineDirection.y;
-      float rayYIntercept = rayPoint.y - rayPoint.x * rayDirection.y / rayDirection.x;
-      float lineYIntercept = endpoint0.y - endpoint0.x * lineDirection.y / lineDirection.x;
-      float x = (lineYIntercept - rayYIntercept) / (raySlope - lineSlope);
-      float y = x * raySlope + rayYIntercept;
 
-      PVector result = new PVector(x, y);
-      float lineLength = PVector.dist(endpoint0, endpoint1);
-      if (PVector.dist(endpoint0, result) < lineLength && PVector.dist(endpoint1, result) < lineLength) {
-        return result;
-      }
-*/
-    }
-    return null;
+    float x = (yIntercept1 - yIntercept0) / (slope0 - slope1);
+    float y = x * slope0 + yIntercept0;
+
+    return new PVector(x, y);
   }
 
   Shape shape() {
