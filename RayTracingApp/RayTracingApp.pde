@@ -27,8 +27,6 @@ void reset() {
 }
 
 void redraw() {
-  //background(0);
-
   drawLights(g);
   drawRectangles(g);
   drawRays(g);
@@ -54,7 +52,7 @@ void drawRectangles(PGraphics g) {
 
   ArrayList<Object> objects = world.objects();
   for (Object object : objects) {
-    if (object.shape() == "rectangle") {
+    if (object.shape() == Shape.RECTANGLE) {
       Rectangle rectangle = (Rectangle)object;
       g.rect(rectangle.x(), rectangle.y(), rectangle.width(), rectangle.height());
     }
@@ -97,7 +95,7 @@ void drawRay(PGraphics g, PVector position, PVector direction) {
 
   ArrayList<Object> objects = world.objects();
   for (Object object : objects) {
-    if (object.shape() == "rectangle") {
+    if (object.shape() == Shape.RECTANGLE) {
       Rectangle rectangle = (Rectangle)object;
       PVector intersection = rectangle.getRayIntersection(position, direction);
       if (intersection != null) {

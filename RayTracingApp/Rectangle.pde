@@ -113,7 +113,7 @@ class Rectangle extends Object {
     return null;
   }
 
-  String shape() {
-    return "rectangle";
+  Shape shape() {
+    return Shape.RECTANGLE;
   }
 }

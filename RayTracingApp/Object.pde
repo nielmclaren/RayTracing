@@ -3,7 +3,7 @@ class Object {
   Object() {
   }
 
-  String shape() {
-    return "object";
+  Shape shape() {
+    return Shape.OBJECT;
   }
 }
