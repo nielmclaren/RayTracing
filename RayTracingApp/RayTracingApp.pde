@@ -1,4 +1,6 @@
 
+final int MIN_INTERSECTION_DISTANCE = 1;
+
 World world;
 
 FileNamer fileNamer;
@@ -14,18 +16,28 @@ void setup() {
 void draw() {}
 
 void reset() {
-  world = new World();
-  world
-    .addLight(new PVector(random(width), random(height)))
-    .addLight(new PVector(random(width), random(height)))
-    .addLight(new PVector(random(width), random(height)))
-    .addRectangle(random(width), random(height), random(300), random(300), random(2 * PI))
-    .addRectangle(random(width), random(height), random(300), random(300), random(2 * PI))
-    .addRectangle(random(width), random(height), random(300), random(300), random(2 * PI))
-    .addRectangle(random(width), random(height), random(300), random(300), random(2 * PI))
-    .addRectangle(random(width), random(height), random(300), random(300), random(2 * PI));
-
+  resetSimple();
   background(0);
+}
+
+void resetSimple() {
+  world = new World()
+    .addLight(new PVector(width/2, 200))
+    .addRectangle(width/2, height/2, 300, 200, atan2(mouseY - height/2, mouseX - width/2));
+}
+
+void resetFuntimes() {
+  int numLights = 1;
+  int numRectangles = 1;
+  world = new World();
+
+  for (int i = 0; i < numLights; i++) {
+    world.addLight(new PVector(random(width), random(height)));
+  }
+
+  for (int i = 0; i < numRectangles; i++) {
+    world.addRectangle(random(width), random(height), random(300), random(300), random(2 * PI));
+  }
 }
 
 void redraw() {
@@ -104,6 +116,10 @@ void drawMouseRays(PGraphics g) {
 }
 
 void drawRay(PGraphics g, PVector position, PVector direction) {
+  drawRay(g, position, direction, 0);
+}
+
+void drawRay(PGraphics g, PVector position, PVector direction, float startDistance) {
   int maxLength = 1200;
 
   g.stroke(255, 255, 0, 32);
