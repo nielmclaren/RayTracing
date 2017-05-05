@@ -134,7 +134,7 @@ void drawRay(PGraphics g, PVector position, PVector direction, float startDistan
       PVector intersection = rectangle.getRayIntersection(position, direction);
       if (intersection != null) {
         float intersectionDist = PVector.dist(intersection, position);
-        if (intersectionDist < nearestIntersectionDist) {
+        if (intersectionDist > MIN_INTERSECTION_DISTANCE && intersectionDist < nearestIntersectionDist) {
           nearestIntersection = intersection;
           nearestIntersectionDist = intersectionDist;
         }

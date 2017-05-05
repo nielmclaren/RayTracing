@@ -117,9 +117,15 @@ class Rectangle extends Object {
       return new PVector((p0.y - yIntercept1) / slope1, p0.y);
     }
 
-    float x = (yIntercept1 - yIntercept0) / (slope0 - slope1);
-    float y = x * slope0 + yIntercept0;
-
+    float x;
+    float y;
+    if (slope0 > slope1) {
+      x = (yIntercept1 - yIntercept0) / (slope0 - slope1);
+      y = x * slope0 + yIntercept0;
+    } else {
+      y = (slope1 * yIntercept0 - slope0 * yIntercept1) / (slope1 - slope0);
+      x = (y - yIntercept0) / slope0;
+    }
     return new PVector(x, y);
   }
 
