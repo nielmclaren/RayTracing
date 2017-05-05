@@ -105,11 +105,11 @@ void drawRays(PGraphics g) {
 }
 
 void drawRay(PGraphics g, PVector position, PVector direction) {
-  drawRay(g, position, direction, 0);
+  drawRay(g, position, direction, 0, 1);
 }
 
-void drawRay(PGraphics g, PVector position, PVector direction, float startDistance) {
-  g.stroke(255, 255, 0, 32);
+void drawRay(PGraphics g, PVector position, PVector direction, float startDistance, float strength) {
+  g.stroke(255, 255, 0, strength * 32);
 
   Intersection nearestIntersection = null;
   float nearestIntersectionDist = Float.MAX_VALUE;
@@ -135,7 +135,7 @@ void drawRay(PGraphics g, PVector position, PVector direction, float startDistan
   } else {
     g.line(position.x, position.y, nearestIntersection.point().x, nearestIntersection.point().y);
     PVector reflected = reflect(direction, nearestIntersection);
-    drawRay(g, nearestIntersection.point(), reflected, startDistance + nearestIntersectionDist);
+    drawRay(g, nearestIntersection.point(), reflected, startDistance + nearestIntersectionDist, strength * 0.6);
   }
 }
 
