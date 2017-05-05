@@ -5,10 +5,14 @@ class Rectangle extends Object {
   private float _width;
   private float _height;
   private float _rotation;
-  public PVector _topLeft;
-  public PVector _topRight;
-  public PVector _bottomRight;
-  public PVector _bottomLeft;
+  private PVector _topLeft;
+  private PVector _topRight;
+  private PVector _bottomRight;
+  private PVector _bottomLeft;
+  private PVector _topNormal;
+  private PVector _rightNormal;
+  private PVector _bottomNormal;
+  private PVector _leftNormal;
 
   Rectangle(float centerX, float centerY, float width, float height) {
     init(centerX, centerY, width, height, 0);
@@ -34,6 +38,15 @@ class Rectangle extends Object {
     _topRight = new PVector(_x + w * cosine + h * sine, _y + w * sine - h * cosine);
     _bottomRight = new PVector(_x + w * cosine - h * sine, _y + w * sine + h * cosine);
     _bottomLeft = new PVector(_x - w * cosine - h * sine, _y - w * sine + h * cosine);
+
+    _topNormal = new PVector(_topRight.y - _topLeft.y, _topLeft.x - _topRight.x);
+    _rightNormal = new PVector(_bottomRight.y - _topRight.y, _topRight.x - _bottomRight.x);
+    _bottomNormal = new PVector(_bottomLeft.y - _bottomRight.y, _bottomRight.x - _bottomLeft.x);
+    _leftNormal = new PVector(_topLeft.y - _bottomLeft.y, _bottomLeft.x - _topLeft.x);
+    _topNormal.normalize();
+    _rightNormal.normalize();
+    _bottomNormal.normalize();
+    _leftNormal.normalize();
   }
 
   float x() {
