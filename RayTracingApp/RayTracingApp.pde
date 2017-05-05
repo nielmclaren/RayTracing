@@ -103,18 +103,6 @@ void drawRays(PGraphics g) {
   }
 }
 
-void drawMouseRays(PGraphics g) {
-  PVector mouse = new PVector(mouseX, mouseY);
-
-  ArrayList<Light> lights = world.lights();
-  for (Light light : lights) {
-    PVector position = light.position();
-    PVector direction = PVector.sub(mouse, position);
-    direction.normalize();
-    drawRay(g, position, direction);
-  }
-}
-
 void drawRay(PGraphics g, PVector position, PVector direction) {
   drawRay(g, position, direction, 0);
 }
