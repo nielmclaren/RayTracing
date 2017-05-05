@@ -13,6 +13,7 @@ class Rectangle extends Object {
   private PVector _rightNormal;
   private PVector _bottomNormal;
   private PVector _leftNormal;
+  private PVector[] _normals;
 
   Rectangle(float centerX, float centerY, float width, float height) {
     init(centerX, centerY, width, height, 0);
@@ -47,6 +48,7 @@ class Rectangle extends Object {
     _rightNormal.normalize();
     _bottomNormal.normalize();
     _leftNormal.normalize();
+    _normals = new PVector[]{_topNormal, _rightNormal, _bottomNormal, _leftNormal};
   }
 
   float x() {
@@ -69,26 +71,31 @@ class Rectangle extends Object {
     return _rotation;
   }
 
-  PVector getRayIntersection(PVector source, PVector direction) {
+  Intersection getRayIntersection(PVector source, PVector direction) {
     PVector top = getRayLineSegmentIntersection(source, direction, _topLeft, _topRight);
     PVector right = getRayLineSegmentIntersection(source, direction, _topRight, _bottomRight);
     PVector bottom = getRayLineSegmentIntersection(source, direction, _bottomRight, _bottomLeft);
     PVector left = getRayLineSegmentIntersection(source, direction, _bottomLeft, _topLeft);
+
+    // Must be the same order as _normals
     PVector[] intersections = {top, right, bottom, left};
 
-    PVector result = null;
+    int resultIndex = -1;
     float resultDist = Float.MAX_VALUE;
     for (int i = 0; i < intersections.length; i++) {
       PVector intersection = intersections[i];
       if (intersection == null) continue;
       float dist = PVector.dist(intersection, source);
       if (dist < resultDist) {
-        result = intersection;
+        resultIndex = i;
         resultDist = dist;
       }
     }
 
-    return result;
+    if (resultIndex >= 0) {
+      return new Intersection(intersections[resultIndex], _normals[resultIndex]);
+    }
+    return null;
   }
 
   private PVector getRayLineSegmentIntersection(PVector rayPoint, PVector rayDirection, PVector endpoint0, PVector endpoint1) {

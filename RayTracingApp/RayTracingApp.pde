@@ -1,5 +1,6 @@
 
 final int MIN_INTERSECTION_DISTANCE = 1;
+final int MAX_RAY_LENGTH = 3000;
 
 World world;
 
@@ -16,7 +17,7 @@ void setup() {
 void draw() {}
 
 void reset() {
-  resetSimple();
+  resetFuntimes();
   background(0);
 }
 
@@ -27,8 +28,8 @@ void resetSimple() {
 }
 
 void resetFuntimes() {
-  int numLights = 1;
-  int numRectangles = 1;
+  int numLights = 3;
+  int numRectangles = 5;
   world = new World();
 
   for (int i = 0; i < numLights; i++) {
@@ -108,20 +109,18 @@ void drawRay(PGraphics g, PVector position, PVector direction) {
 }
 
 void drawRay(PGraphics g, PVector position, PVector direction, float startDistance) {
-  int maxLength = 1200;
-
   g.stroke(255, 255, 0, 32);
 
-  PVector nearestIntersection = null;
+  Intersection nearestIntersection = null;
   float nearestIntersectionDist = Float.MAX_VALUE;
 
   ArrayList<Object> objects = world.objects();
   for (Object object : objects) {
     if (object.shape() == Shape.RECTANGLE) {
       Rectangle rectangle = (Rectangle)object;
-      PVector intersection = rectangle.getRayIntersection(position, direction);
+      Intersection intersection = rectangle.getRayIntersection(position, direction);
       if (intersection != null) {
-        float intersectionDist = PVector.dist(intersection, position);
+        float intersectionDist = PVector.dist(intersection.point(), position);
         if (intersectionDist > MIN_INTERSECTION_DISTANCE && intersectionDist < nearestIntersectionDist) {
           nearestIntersection = intersection;
           nearestIntersectionDist = intersectionDist;
@@ -130,11 +129,20 @@ void drawRay(PGraphics g, PVector position, PVector direction, float startDistan
     }
   }
 
-  if (nearestIntersection == null) {
+  float maxLength = MAX_RAY_LENGTH - startDistance;
+  if (nearestIntersection == null || nearestIntersectionDist > maxLength) {
     g.line(position.x, position.y, position.x + maxLength * direction.x, position.y + maxLength * direction.y);
   } else {
-    g.line(position.x, position.y, nearestIntersection.x, nearestIntersection.y);
+    g.line(position.x, position.y, nearestIntersection.point().x, nearestIntersection.point().y);
+    PVector reflected = reflect(direction, nearestIntersection);
+    drawRay(g, nearestIntersection.point(), reflected, startDistance + nearestIntersectionDist);
   }
+}
+
+PVector reflect(PVector direction, Intersection intersection) {
+  PVector result = intersection.normal().copy();
+  result.mult(2 * direction.dot(intersection.normal()));
+  return PVector.sub(direction, result);
 }
 
 void keyReleased() {
