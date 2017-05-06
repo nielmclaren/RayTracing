@@ -90,27 +90,31 @@ void drawRectangles(PGraphics g) {
 }
 
 void drawRays(PGraphics g) {
+  colorMode(HSB);
+  
   int numRays = 4 * 360;
   ArrayList<Light> lights = world.lights();
   for (Light light : lights) {
     PVector position = light.position();
-
+    color c = color(random(255), 128, 255);
+    
     for (int i = 0; i < numRays; i++) {
       PVector direction = new PVector(
           cos((float)i / numRays * 2 * PI),
           sin((float)i / numRays * 2 * PI));
-      drawRay(g, position, direction);
+      drawRay(g, position, direction, c);
     }
   }
 }
 
-void drawRay(PGraphics g, PVector position, PVector direction) {
-  drawRay(g, position, direction, 0, 1);
+void drawRay(PGraphics g, PVector position, PVector direction, color c) {
+  drawRay(g, position, direction, c, 0, 1);
 }
 
-void drawRay(PGraphics g, PVector position, PVector direction, float startDistance, float strength) {
-  g.stroke(255, 255, 0, strength * 32);
-
+void drawRay(PGraphics g, PVector position, PVector direction, color c, float startDistance, float strength) {
+  g.stroke(hue(c), saturation(c), brightness(c), strength * 32);
+  g.strokeWeight(2);
+  
   Intersection nearestIntersection = null;
   float nearestIntersectionDist = Float.MAX_VALUE;
 
@@ -135,7 +139,7 @@ void drawRay(PGraphics g, PVector position, PVector direction, float startDistan
   } else {
     g.line(position.x, position.y, nearestIntersection.point().x, nearestIntersection.point().y);
     PVector reflected = reflect(direction, nearestIntersection);
-    drawRay(g, nearestIntersection.point(), reflected, startDistance + nearestIntersectionDist, strength * 0.6);
+    drawRay(g, nearestIntersection.point(), reflected, c, startDistance + nearestIntersectionDist, strength * 0.6);
   }
 }
 
