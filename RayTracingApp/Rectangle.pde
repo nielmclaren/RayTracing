@@ -29,7 +29,65 @@ class Rectangle extends Object {
     _width = width;
     _height = height;
     _rotation = rotation;
+    updateCornersAndNormals();
+  }
 
+  float x() {
+    return _x;
+  }
+
+  Rectangle x(float v) {
+    _x = v;
+    updateCornersAndNormals();
+    return this;
+  }
+
+  float y() {
+    return _y;
+  }
+
+  Rectangle y(float v) {
+    _y = v;
+    updateCornersAndNormals();
+    return this;
+  }
+
+  float width() {
+    return _width;
+  }
+
+  Rectangle width(float v) {
+    _width = v;
+    updateCornersAndNormals();
+    return this;
+  }
+
+  float height() {
+    return _height;
+  }
+
+  Rectangle height(float v) {
+    _height = v;
+    updateCornersAndNormals();
+    return this;
+  }
+
+  float rotation() {
+    return _rotation;
+  }
+
+  Rectangle rotation(float v) {
+    _rotation = v;
+    updateCornersAndNormals();
+    return this;
+  }
+
+  Rectangle material(Material material) {
+    super.material(material);
+    return this;
+  }
+
+  private void updateCornersAndNormals() {
     float w = _width/2;
     float h = _height/2;
     float cosine = cos(_rotation);
@@ -51,26 +109,6 @@ class Rectangle extends Object {
     _normals = new PVector[]{_topNormal, _rightNormal, _bottomNormal, _leftNormal};
   }
 
-  float x() {
-    return _x;
-  }
-
-  float y() {
-    return _y;
-  }
-
-  float width() {
-    return _width;
-  }
-
-  float height() {
-    return _height;
-  }
-
-  float rotation() {
-    return _rotation;
-  }
-
   Intersection getRayIntersection(PVector source, PVector direction) {
     PVector top = getRayLineSegmentIntersection(source, direction, _topLeft, _topRight);
     PVector right = getRayLineSegmentIntersection(source, direction, _topRight, _bottomRight);
@@ -86,7 +124,7 @@ class Rectangle extends Object {
       PVector intersection = intersections[i];
       if (intersection == null) continue;
       float dist = PVector.dist(intersection, source);
-      if (dist < resultDist) {
+      if (dist > Constants.MIN_INTERSECTION_DISTANCE && dist < resultDist) {
         resultIndex = i;
         resultDist = dist;
       }
