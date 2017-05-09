@@ -5,6 +5,7 @@ FileNamer fileNamer;
 
 void setup() {
   size(800, 800);
+  colorMode(HSB);
   reset();
   redraw();
 
@@ -19,24 +20,18 @@ void reset() {
 }
 
 void resetSimple() {
-  Material material = Material.glass()
-    .isTransparent(true)
-    .reflectivity(0);
-
+  Material material = getMaterial();
   world = new World()
-    .addLight(new PVector(100, height/2))
-    .addObject(new Rectangle(width/2, height/2, 300, 200)
-        .rotation(atan2(mouseY - height/2, mouseX - width/2))
+    .addLight(new PVector(700, height/2))
+    .addObject(new Ellipse(width/2, height/2, 300, 200)
         .material(material));
 }
 
 void resetFuntimes() {
-  int numLights = 1;
-  int numRectangles = 5;
-  Material material = Material.glass()
-    .isTransparent(true)
-    .reflectivity(0);
-
+  int numLights = 3;
+  int numRectangles = 4;
+  int numEllipses = 3;
+  Material material = getMaterial();
   world = new World();
 
   for (int i = 0; i < numLights; i++) {
@@ -48,12 +43,23 @@ void resetFuntimes() {
         .rotation(random(2 * PI))
         .material(material));
   }
+  
+  for (int i = 0; i < numEllipses; i++) {
+    world.addObject(new Ellipse(random(width), random(height), random(300), random(300))
+        .material(material));
+  }
+}
+
+Material getMaterial() {
+  return Material.glass()
+    .isTransparent(false)
+    .reflectivity(0);
 }
 
 void redraw() {
   drawGrid(g);
   drawLights(g);
-  drawRectangles(g);
+  drawObjects(g);
   drawRays(g);
 }
 
@@ -80,22 +86,38 @@ void drawLights(PGraphics g) {
   }
 }
 
-void drawRectangles(PGraphics g) {
+void drawObjects(PGraphics g) {
   g.rectMode(CENTER);
   g.fill(64);
   g.noStroke();
 
   ArrayList<Object> objects = world.objects();
   for (Object object : objects) {
-    if (object.shape() == Shape.RECTANGLE) {
-      Rectangle rectangle = (Rectangle)object;
-      g.pushMatrix();
-      g.translate(rectangle.x(), rectangle.y());
-      g.rotate(rectangle.rotation());
-      g.rect(0, 0, rectangle.width(), rectangle.height());
-      g.popMatrix();
+    switch (object.shape()) {
+      case RECTANGLE:
+        drawRectangle((Rectangle)object);
+        break;
+      case ELLIPSE:
+        drawEllipse((Ellipse)object);
+        break;
     }
   }
+}
+
+void drawRectangle(Rectangle rectangle) {
+  g.pushMatrix();
+  g.translate(rectangle.x(), rectangle.y());
+  g.rotate(rectangle.rotation());
+  g.rect(0, 0, rectangle.width(), rectangle.height());
+  g.popMatrix();
+}
+
+void drawEllipse(Ellipse ellipse) {
+  g.pushMatrix();
+  g.translate(ellipse.x(), ellipse.y());
+  g.rotate(ellipse.rotation());
+  g.ellipse(0, 0, ellipse.width(), ellipse.height());
+  g.popMatrix();
 }
 
 void drawRays(PGraphics g) {
@@ -128,16 +150,21 @@ void drawRay(PGraphics g, PVector position, PVector direction, color c, float st
 
   ArrayList<Object> objects = world.objects();
   for (Object object : objects) {
+    Intersection intersection = null;
     if (object.shape() == Shape.RECTANGLE) {
       Rectangle rectangle = (Rectangle)object;
-      Intersection intersection = rectangle.getRayIntersection(position, direction);
-      if (intersection != null) {
-        float intersectionDist = PVector.dist(intersection.point(), position);
-        if (intersectionDist > Constants.MIN_INTERSECTION_DISTANCE && intersectionDist < nearestIntersectionDist) {
-          nearestIntersection = intersection;
-          nearestIntersectionObject = object;
-          nearestIntersectionDist = intersectionDist;
-        }
+      intersection = rectangle.getRayIntersection(position, direction);
+    } else if (object.shape() == Shape.ELLIPSE) {
+      Ellipse ellipse = (Ellipse)object;
+      intersection = ellipse.getRayIntersection(position, direction);
+    }
+    
+    if (intersection != null) {
+      float intersectionDist = PVector.dist(intersection.point(), position);
+      if (intersectionDist > Constants.MIN_INTERSECTION_DISTANCE && intersectionDist < nearestIntersectionDist) {
+        nearestIntersection = intersection;
+        nearestIntersectionObject = object;
+        nearestIntersectionDist = intersectionDist;
       }
     }
   }

@@ -1,2 +1,2 @@
 
-public enum Shape { OBJECT, RECTANGLE };
+public enum Shape { OBJECT, RECTANGLE, ELLIPSE };
