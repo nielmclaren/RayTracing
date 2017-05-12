@@ -24,12 +24,13 @@ void resetSimple() {
   world = new World()
     .addLight(new PVector(700, height/2))
     .addObject(new Ellipse(width/2, height/2, 300, 200)
+        .rotation(atan2(mouseY - height/2, mouseX - width/2))
         .material(material));
 }
 
 void resetFuntimes() {
-  int numLights = 3;
-  int numRectangles = 4;
+  int numLights = 1;
+  int numRectangles = 0;
   int numEllipses = 3;
   Material material = getMaterial();
   world = new World();
@@ -46,6 +47,7 @@ void resetFuntimes() {
   
   for (int i = 0; i < numEllipses; i++) {
     world.addObject(new Ellipse(random(width), random(height), random(300), random(300))
+        .rotation(random(2 * PI))
         .material(material));
   }
 }
@@ -53,17 +55,18 @@ void resetFuntimes() {
 Material getMaterial() {
   return Material.glass()
     .isTransparent(false)
-    .reflectivity(0);
+    .reflectivity(0.8);
 }
 
 void redraw() {
-  drawGrid(g);
+  //drawGrid(g);
   drawLights(g);
   drawObjects(g);
   drawRays(g);
 }
 
 void drawGrid(PGraphics g) {
+  g.background(0);
   g.stroke(96, 64, 110);
   for (int x = 0; x < width; x += 100) {
     g.line(x, 0, x, height);
@@ -125,7 +128,7 @@ void drawRays(PGraphics g) {
   ArrayList<Light> lights = world.lights();
   for (Light light : lights) {
     PVector position = light.position();
-    color c = color(random(255), 128, 255);
+    color c = color(random(255), 192, 255);
 
     for (int i = 0; i < numRays; i++) {
       PVector direction = new PVector(
@@ -220,6 +223,9 @@ PVector refract(PVector incident, Intersection intersection, float indexOfRefrac
 
 void keyReleased() {
   switch (key) {
+    case 'a':
+      saveAnimation();
+      break;
     case 'b':
       background(0);
       break;
@@ -230,6 +236,23 @@ void keyReleased() {
     case 'r':
       save(fileNamer.next());
       break;
+  }
+}
+
+void saveAnimation() {
+  Material material = getMaterial();
+  FileNamer animationNamer = new FileNamer("output/anim", "/");
+  FileNamer frameNamer = new FileNamer(animationNamer.next() + "frame", "png");
+  int numFrames = 300;
+  
+  for (int i = 0; i < numFrames; i++) {
+    world = new World()
+      .addLight(new PVector(700, height/2))
+      .addObject(new Ellipse(width/2, height/2, 300, 200)
+          .rotation(map(i, 0, numFrames, 0, 2 * PI))
+          .material(material));
+    redraw();
+    save(frameNamer.next());
   }
 }
 

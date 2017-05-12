@@ -87,16 +87,22 @@ class Ellipse extends Object {
     float hSq = h * h;
     float vSq = v * v;
     
-    float a = vSq + hSq * mSq;
-    float b = 2 * hSq * d * m;
-    float c = hSq * (dSq - vSq);
+    float r = _rotation;
+    float cosine = cos(r);
+    float sine = sin(r);
+    float cosineSq = cosine * cosine;
+    float sineSq = sine * sine;
+    
+    float a = vSq * (cosineSq + 2 * m * cosine * sine + mSq * sineSq) + hSq * (mSq * cosineSq - 2 * m * cosine * sine + sineSq);
+    float b = 2 * vSq * d * (cosine * sine + m * sineSq) + 2 * hSq * d * (m * cosineSq - cosine * sine);
+    float c = dSq * (vSq * sineSq + hSq * cosineSq) - hSq * vSq;
 
     float discriminant = b * b - 4 * a * c;
     if (discriminant == 0) {
         float x = -b / (2 * a);
         float y = m * x + d;
         PVector result = new PVector(_x + x, _y + y);
-        return new Intersection(result, getNormalTo(new PVector(x, y)));
+        return new Intersection(result, getNormalAt(new PVector(x, y)));
     }
     
     float x0 = (-b + sqrt(discriminant)) / (2 * a);
@@ -106,16 +112,32 @@ class Ellipse extends Object {
     PVector p1 = new PVector(_x + x1, _y + m * x1 + d);
 
     if (PVector.sub(p0, source).dot(direction) > 0 && p0.dist(source) < p1.dist(source)) {
-        return new Intersection(p0, getNormalTo(p0));
+        return new Intersection(p0, getNormalAt(p0));
     } else if (PVector.sub(p1, source).dot(direction) > 0) {
-        return new Intersection(p1, getNormalTo(p1));
+        return new Intersection(p1, getNormalAt(p1));
     }
     return null;
   }
 
-  private PVector getNormalTo(PVector p) {
-     // TODO: Implement ellipse normals.
-     return new PVector();
+  private PVector getNormalAt(PVector p) {
+    float h = _width / 2;
+    float v = _height / 2;
+    float hSq = h * h;
+    float vSq = v * v;
+
+    float r = _rotation;
+    float cosine = cos(-r);
+    float sine = sin(-r);
+    
+    float x0 = p.x - _x;
+    float y0 = p.y - _y;
+    float x = x0 * cosine - y0 * sine;
+    float y = x0 * sine + y0 * cosine;
+    
+    PVector result = new PVector(-y * h/v, x * v/h);
+    result.normalize();
+    result.rotate(r - PI/2);
+    return result;
   }
 
   Shape shape() {
