@@ -74,7 +74,7 @@ class Ellipse extends Object {
 
   Intersection getRayIntersection(PVector source, PVector direction) {
     if (direction.x == 0) {
-        // TODO: Implement ellipse ray intersection with vertical lines.
+      // TODO: Implement ellipse ray intersection with vertical lines.
     }
     
     float m = direction.y / direction.x; // Slope.
@@ -99,10 +99,10 @@ class Ellipse extends Object {
 
     float discriminant = b * b - 4 * a * c;
     if (discriminant == 0) {
-        float x = -b / (2 * a);
-        float y = m * x + d;
-        PVector result = new PVector(_x + x, _y + y);
-        return new Intersection(result, getNormalAt(new PVector(x, y)));
+      float x = -b / (2 * a);
+      float y = m * x + d;
+      PVector result = new PVector(_x + x, _y + y);
+      return new Intersection(result, getNormalAt(new PVector(x, y)));
     }
     
     float x0 = (-b + sqrt(discriminant)) / (2 * a);
@@ -111,10 +111,15 @@ class Ellipse extends Object {
     float x1 = (-b - sqrt(discriminant)) / (2 * a);
     PVector p1 = new PVector(_x + x1, _y + m * x1 + d);
 
-    if (PVector.sub(p0, source).dot(direction) > 0 && p0.dist(source) < p1.dist(source)) {
-        return new Intersection(p0, getNormalAt(p0));
-    } else if (PVector.sub(p1, source).dot(direction) > 0) {
-        return new Intersection(p1, getNormalAt(p1));
+    float dist0 = p0.dist(source);
+    float dist1 = p1.dist(source);
+    boolean isP0Valid = dist0 > Constants.MIN_INTERSECTION_DISTANCE && PVector.sub(p0, source).dot(direction) > 0;
+    boolean isP1Valid = dist1 > Constants.MIN_INTERSECTION_DISTANCE && PVector.sub(p1, source).dot(direction) > 0;
+
+    if (isP0Valid && (!isP1Valid || dist0 < dist1)) {
+      return new Intersection(p0, getNormalAt(p0));
+    } else if (isP1Valid) {
+      return new Intersection(p1, getNormalAt(p1));
     }
     return null;
   }

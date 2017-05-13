@@ -15,14 +15,14 @@ void setup() {
 void draw() {}
 
 void reset() {
-  resetFuntimes();
+  resetSimple();
   background(0);
 }
 
 void resetSimple() {
   Material material = getMaterial();
   world = new World()
-    .addLight(new PVector(700, height/2))
+    .addLight(new PVector(100, height/2))
     .addObject(new Ellipse(width/2, height/2, 300, 200)
         .rotation(atan2(mouseY - height/2, mouseX - width/2))
         .material(material));
@@ -54,19 +54,20 @@ void resetFuntimes() {
 
 Material getMaterial() {
   return Material.glass()
-    .isTransparent(false)
-    .reflectivity(0.8);
+    .isTransparent(true)
+    .reflectivity(0);
 }
 
 void redraw() {
-  //drawGrid(g);
-  drawLights(g);
+  drawGrid(g);
   drawObjects(g);
   drawRays(g);
 }
 
 void drawGrid(PGraphics g) {
+  g.pushStyle();
   g.background(0);
+  g.colorMode(RGB);
   g.stroke(96, 64, 110);
   for (int x = 0; x < width; x += 100) {
     g.line(x, 0, x, height);
@@ -74,19 +75,7 @@ void drawGrid(PGraphics g) {
   for (int y = 0; y < height; y += 100) {
     g.line(0, y, width, y);
   }
-}
-
-void drawLights(PGraphics g) {
-  g.ellipseMode(CENTER);
-  g.fill(255);
-  g.noStroke();
-
-  ArrayList<Light> lights = world.lights();
-  for (Light light : lights) {
-    int radius = 5;
-    PVector position = light.position();
-    g.ellipse(position.x, position.y, radius, radius);
-  }
+  g.popStyle();
 }
 
 void drawObjects(PGraphics g) {
@@ -124,16 +113,17 @@ void drawEllipse(Ellipse ellipse) {
 }
 
 void drawRays(PGraphics g) {
-  int numRays = 4 * 360;
+  int numRays = 360;
   ArrayList<Light> lights = world.lights();
+  float a = 0.05 * 2 * PI;
   for (Light light : lights) {
     PVector position = light.position();
-    color c = color(random(255), 192, 255);
+    color c = color(192, 192, 255);
 
     for (int i = 0; i < numRays; i++) {
       PVector direction = new PVector(
-          cos((float)i / numRays * 2 * PI),
-          sin((float)i / numRays * 2 * PI));
+          cos(map(i, 0, numRays, 2 * PI - a/2, 2 * PI + a/2)),
+          sin(map(i, 0, numRays, 2 * PI - a/2, 2 * PI + a/2)));
       drawRay(g, position, direction, c);
     }
   }
@@ -145,7 +135,7 @@ void drawRay(PGraphics g, PVector position, PVector direction, color c) {
 
 // FIXME: Refactor.
 void drawRay(PGraphics g, PVector position, PVector direction, color c, float startDistance, float strength) {
-  g.stroke(hue(c), saturation(c), brightness(c), strength * 128);
+  g.stroke(hue(c), saturation(c), brightness(c), strength * 32);
 
   Intersection nearestIntersection = null;
   Object nearestIntersectionObject = null;
@@ -211,13 +201,17 @@ PVector refract(PVector incident, Intersection intersection, float indexOfRefrac
   }
 
   float n = incidentDotNormal > 0 ? indexOfRefraction / 1 : 1 / indexOfRefraction;
-  float cosTheta1 = -incidentDotNormal;
-  float k = n * cosTheta1 - sqrt(1 - n * n * (1 - cosTheta1 * cosTheta1));
-  PVector result = incident.copy();
-  result.mult(n);
-  result.add(PVector.mult(normal, k));
-  result.normalize();
+  float nSq = n * n;
+  float incidentCos = normal.dot(incident);
+  float incidentCosSq = incidentCos * incidentCos;
+  float refractedSinSq = nSq * (1 - incidentCosSq);
+  if (refractedSinSq > 1.0) {
+    return null;
+  }
   
+  float k = n + sqrt(1.0 - refractedSinSq);
+  PVector result = PVector.mult(incident, n);
+  result.sub(PVector.mult(normal, k));
   return result;
 }
 
@@ -247,9 +241,9 @@ void saveAnimation() {
   
   for (int i = 0; i < numFrames; i++) {
     world = new World()
-      .addLight(new PVector(700, height/2))
+      .addLight(new PVector(100, height/2))
       .addObject(new Ellipse(width/2, height/2, 300, 200)
-          .rotation(map(i, 0, numFrames, 0, 2 * PI))
+          .rotation(map(i, 0, numFrames, 0, PI))
           .material(material));
     redraw();
     save(frameNamer.next());
