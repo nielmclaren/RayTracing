@@ -15,7 +15,7 @@ void setup() {
 void draw() {}
 
 void reset() {
-  resetSimple();
+  resetFuntimes();
   background(0);
 }
 
@@ -36,14 +36,14 @@ void resetSimple(float t) {
 }
 
 void resetFuntimes() {
-  int numLights = 1;
-  int numRectangles = 0;
-  int numEllipses = 7;
+  int numLights = 3;
+  int numRectangles = 4;
+  int numEllipses = 3;
   Material material = getMaterial();
   world = new World();
 
   for (int i = 0; i < numLights; i++) {
-    world.addLight(new PVector(width/2, height/2));
+    world.addLight(new PVector(random(width), random(height)));
   }
 
   for (int i = 0; i < numRectangles; i++) {
@@ -56,11 +56,8 @@ void resetFuntimes() {
     float r0 = 200;
     float r1 = 400;
     float a = PI/2 + map(i, 0, numEllipses, 0, 2 * PI);
-    world.addObject(new Ellipse(width/2 + r0 * cos(a), height/2 + r0 * sin(a), 150, 100)
-        .rotation(PI/2 + a + map(i, 0, numEllipses, 0, PI/2))
-        .material(material))
-      .addObject(new Ellipse(width/2 + r1 * cos(a), height/2 + r1 * sin(a), 200, 100)
-        .rotation(PI/2 + a - map(i, 0, numEllipses, 0, PI/2))
+    world.addObject(new Ellipse(random(width), random(height), 150, 100)
+        .rotation(random(2 * PI))
         .material(material));
   }
 }
@@ -130,21 +127,22 @@ void drawEllipse(Ellipse ellipse) {
 }
 
 void drawRays(PGraphics g, float t) {
+  int numRays = 360;
+  PVector direction = new PVector(1, 0);
   ArrayList<Light> lights = world.lights();
-  int numStreams = 3;
-  float a = 0.025 * 2 * PI;
   for (Light light : lights) {
+    color c = color(random(255), 192, 255);
     PVector position = light.position();
-    color c = color(120, 192, 255);
-
-    float startAngle = 0.025 * 2 * PI;
-    float endAngle = startAngle + a;
-    drawStreamRays(g, position, startAngle, endAngle, c);
+    for (int i = 0; i < numRays; i++) {
+      direction.x = cos((float)i / numRays * 2 * PI);
+      direction.y = sin((float)i / numRays * 2 * PI);
+      drawRay(g, position, direction, c);
+    }
   }
 }
 
 void drawStreamRays(PGraphics g, PVector position, float startAngle, float endAngle, color c) {
-  int numRays = 4 * 360;
+  int numRays = 120;
   for (int i = 0; i < numRays; i++) {
     PVector direction = new PVector(1, 0);
     direction.rotate(map(i, 0, numRays, startAngle, endAngle));
@@ -158,7 +156,7 @@ void drawRay(PGraphics g, PVector position, PVector direction, color c) {
 
 // FIXME: Refactor.
 void drawRay(PGraphics g, PVector position, PVector direction, color c, float startDistance, float strength) {
-  g.stroke(hue(c), saturation(c), brightness(c), strength * 8);
+  g.stroke(hue(c), saturation(c), brightness(c), strength * 128);
 
   Intersection nearestIntersection = null;
   Object nearestIntersectionObject = null;
@@ -188,11 +186,8 @@ void drawRay(PGraphics g, PVector position, PVector direction, color c, float st
 
   float maxLength = Constants.MAX_RAY_LENGTH - startDistance;
   if (nearestIntersection == null || nearestIntersectionDist > maxLength) {
-    g.stroke(map(normalizeAngle(direction.heading() - PI/4), 0, 2 * PI, 0, 255), saturation(c), brightness(c), strength * 8);
     g.line(position.x, position.y, position.x + maxLength * direction.x, position.y + maxLength * direction.y);
   } else {
-    PVector delta = PVector.sub(nearestIntersection.point(), position);
-    g.stroke(map(normalizeAngle(delta.heading() - PI/4), 0, 2 * PI, 0, 255), saturation(c), brightness(c), strength * 8);
     g.line(position.x, position.y, nearestIntersection.point().x, nearestIntersection.point().y);
 
     Material material = nearestIntersectionObject.material();
