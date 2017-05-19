@@ -15,17 +15,24 @@ void setup() {
 void draw() {}
 
 void reset() {
-  resetFuntimes();
+  resetSimple();
   background(0);
 }
 
 void resetSimple() {
+  resetSimple(0);
+}
+
+void resetSimple(float t) {
   Material material = getMaterial();
   world = new World()
-    .addLight(new PVector(100, height/2))
-    .addObject(new Ellipse(width/2, height/2, 300, 200)
-        .rotation(atan2(mouseY - height/2, mouseX - width/2))
-        .material(material));
+    .addLight(new PVector(100, 575))
+    .addObject(new Ellipse(300, 600, 200, 50)
+        .rotation(PI * 5/4 + cos(t * 2 * PI) * 0.05 * PI)
+        .material(material))
+    .addObject(new Ellipse(600, height/2, 200, 50)
+        .rotation(PI/3 + map(t, 0, 1, 0, -PI))
+        .material(new Material().isTransparent(false).reflectivity(0.8)));
 }
 
 void resetFuntimes() {
@@ -125,16 +132,14 @@ void drawEllipse(Ellipse ellipse) {
 void drawRays(PGraphics g, float t) {
   ArrayList<Light> lights = world.lights();
   int numStreams = 3;
-  float a = 0.05 * 2 * PI;
+  float a = 0.025 * 2 * PI;
   for (Light light : lights) {
     PVector position = light.position();
-    color c = color(20, 192, 255);
+    color c = color(120, 192, 255);
 
-    for (int i = 0; i < numStreams; i++) {
-      float startAngle = t * 2 * PI / 3 + map(i, 0, numStreams, 0, 2 * PI);
-      float endAngle = startAngle + a;
-      drawStreamRays(g, position, startAngle, endAngle, c);
-    }
+    float startAngle = 0.025 * 2 * PI;
+    float endAngle = startAngle + a;
+    drawStreamRays(g, position, startAngle, endAngle, c);
   }
 }
 
@@ -180,10 +185,14 @@ void drawRay(PGraphics g, PVector position, PVector direction, color c, float st
     }
   }
 
+
   float maxLength = Constants.MAX_RAY_LENGTH - startDistance;
   if (nearestIntersection == null || nearestIntersectionDist > maxLength) {
+    g.stroke(map(normalizeAngle(direction.heading() - PI/4), 0, 2 * PI, 0, 255), saturation(c), brightness(c), strength * 8);
     g.line(position.x, position.y, position.x + maxLength * direction.x, position.y + maxLength * direction.y);
   } else {
+    PVector delta = PVector.sub(nearestIntersection.point(), position);
+    g.stroke(map(normalizeAngle(delta.heading() - PI/4), 0, 2 * PI, 0, 255), saturation(c), brightness(c), strength * 8);
     g.line(position.x, position.y, nearestIntersection.point().x, nearestIntersection.point().y);
 
     Material material = nearestIntersectionObject.material();
@@ -202,6 +211,13 @@ void drawRay(PGraphics g, PVector position, PVector direction, color c, float st
       }
     }
   }
+}
+
+float normalizeAngle(float v) {
+  while (v < 0) {
+    v += 2 * PI;
+  }
+  return v % (2 * PI);
 }
 
 PVector reflect(PVector direction, Intersection intersection) {
@@ -258,11 +274,11 @@ void keyReleased() {
 void saveAnimation() {
   FileNamer animationNamer = new FileNamer("output/anim", "/");
   FileNamer frameNamer = new FileNamer(animationNamer.next() + "frame", "png");
-  resetFuntimes();
 
   int numFrames = 100;
   for (int i = 0; i < numFrames; i++) {
-    redraw((float)i / numFrames);
+    resetSimple((float)i / numFrames);
+    redraw();
     save(frameNamer.next());
   }
 }
